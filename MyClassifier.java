@@ -7,21 +7,47 @@ public class MyClassifier extends Classifier{
 		public boolean numeric;
 		public HashMap<String, Integer> typeCounts; 
 		public int num;
+		public ArrayList<Integer> nums;
+		public double theta; 
 		public Field(String name, boolean numeric, HashMap<String, Integer> typeCounts, int num)
 		{
 			this.name = name;
 			this.numeric = numeric;
 			this.typeCounts = typeCounts;
 			this.num = num;
+			nums = new ArrayList<Integer>();
+			theta = 0.0;
 
 		}
 
+		public void train(Field outputs)
+		{
+			double rate = 1;
+
+			for(int i = 0; i < nums.size(); i++)
+			{
+				theta = theta + rate;
+
+
+			}
+
+		}
+
+		public double sigmoid(double x)
+		{
+			double d = 1.0 + Math.pow(Math.E,(-1.0 * x));
+			d = 1.0/d;
+			return d;
+
+		}
 		public String toString()
 		{
 			String s = "Name: " + this.name;
-			if(this.numeric)
-				s+= " numeric";
-			else{
+
+			if(this.numeric || name.equals("output"))
+				s+= " numeric" + this.nums;
+			else
+			{
 				s+=" [";
 				// to fix
 				for(Map.Entry<String, Integer> entry: this.typeCounts.entrySet())
@@ -89,20 +115,37 @@ public class MyClassifier extends Classifier{
 	public void train(String trainingDataFilpath){
 		try{
 			Scanner sc = new Scanner(new File(trainingDataFilpath));
+			ArrayList<Integer> outputNums = new ArrayList<Integer>();
 			while(sc.hasNextLine())
 			{
 				String[] split = sc.nextLine().split(" +");
 				for(int i = 0 ; i < split.length; i++)
 				{
 					Field toUse = fields.get(i);
-					if(!toUse.numeric)
+					if(i == split.length-1)
+					{
+						String key = split[i];
+						if(key.equals(">50K"))
+							outputNums.add(1);
+						else
+							outputNums.add(0);
+						toUse.typeCounts.put(key, toUse.typeCounts.get(key)+1);
+
+					}
+					else if(!toUse.numeric)
 					{
 						String key = split[i];
 						toUse.typeCounts.put(key, toUse.typeCounts.get(key)+1);
 					}
+					else
+					{
+						int val = Integer.parseInt(split[i]);
+						toUse.nums.add(val);
+					}
 
 				}
 			}
+			fields.get(fields.size()-1).nums = outputNums;
 		}
 		catch(FileNotFoundException e){
 			System.out.println("FNF");
