@@ -2,7 +2,7 @@ import java.util.*;
 import java.io.*;
 public class RandomClassifier extends Classifier{
 
-	public MyClassifier(String namesFilepath) 
+	public RandomClassifier(String namesFilepath) 
 	{
 		super(namesFilepath);
 
