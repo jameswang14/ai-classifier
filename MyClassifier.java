@@ -39,6 +39,7 @@ public class MyClassifier extends Classifier{
 		try{
 			Scanner sc = new Scanner(new File(namesFilepath));
 			ArrayList<String> temp = new ArrayList<String>();
+			ArrayList<String> split = new ArrayList<String>();
 			temp.add(sc.next());
 			temp.add(sc.next());
 			sc.nextLine();
@@ -47,18 +48,25 @@ public class MyClassifier extends Classifier{
 			while(sc.hasNextLine())
 			{
 				temp.clear();
+				split.clear();
 				String nextLine = sc.nextLine();
 				Scanner line = new Scanner(nextLine);
-				ArrayList<String> split = new ArrayList<String>();
+				
 				while(line.hasNext())
-					split.add(line.next());
+				{
+					String next = line.next();
+					split.add(next);
+				}
 				if(split.get(1).equals("numeric"))
-					fields.add(new Field(split.get(0), true, null, -1));
+					fields.add(new Field(split.get(0), true, null, 0));
 				else
 				{
-					for(int i = 0; i < split.size(); i++)
+					for(int i = 1; i < split.size(); i++)
 						temp.add(split.get(i));
-					fields.add(new Field(split.get(0), false, temp, 0));
+					ArrayList<String> copy = new ArrayList<String>();
+					for(String s: temp)
+						copy.add(new String(s));
+					fields.add(new Field(split.get(0), false, copy, -1));
 
 				}
 
