@@ -5,13 +5,13 @@ public class MyClassifier extends Classifier{
 	class Field{
 		public String name;
 		public boolean numeric;
-		public ArrayList<String> types; 
+		public HashMap<String, Integer> typeCounts; 
 		public int num;
-		public Field(String name, boolean numeric, ArrayList<String> types, int num)
+		public Field(String name, boolean numeric, HashMap<String, Integer> typeCounts, int num)
 		{
 			this.name = name;
 			this.numeric = numeric;
-			this.types = types;
+			this.typeCounts = typeCounts;
 			this.num = num;
 
 		}
@@ -23,8 +23,10 @@ public class MyClassifier extends Classifier{
 				s+= " numeric";
 			else{
 				s+=" [";
-				for(String type: types)
-					s+=type + " ";
+				// to fix
+				for(Map.Entry<String, Integer> entry: this.typeCounts.entrySet())
+					s+=entry.getKey() + ": " + entry.getValue().toString() + ", ";
+				s = s.substring(0, s.length()-2);
 				s+= "]";
 			}	
 			return s;
@@ -38,16 +40,19 @@ public class MyClassifier extends Classifier{
 		fields = new ArrayList<Field>();
 		try{
 			Scanner sc = new Scanner(new File(namesFilepath));
-			ArrayList<String> temp = new ArrayList<String>();
+			ArrayList<String> copiedStrings = new ArrayList<String>();
 			ArrayList<String> split = new ArrayList<String>();
-			temp.add(sc.next());
-			temp.add(sc.next());
+			copiedStrings.add(sc.next());
+			copiedStrings.add(sc.next());
+			HashMap<String, Integer> copy = new HashMap<String, Integer>();
+			for(String s: copiedStrings)
+				copy.put(new String(s), 0);
 			sc.nextLine();
 			sc.nextLine();
-			Field output = new Field("output", false, temp, -1);
+			Field output = new Field("output", false, copy, -1);
 			while(sc.hasNextLine())
 			{
-				temp.clear();
+				copiedStrings.clear();
 				split.clear();
 				String nextLine = sc.nextLine();
 				Scanner line = new Scanner(nextLine);
@@ -62,15 +67,16 @@ public class MyClassifier extends Classifier{
 				else
 				{
 					for(int i = 1; i < split.size(); i++)
-						temp.add(split.get(i));
-					ArrayList<String> copy = new ArrayList<String>();
-					for(String s: temp)
-						copy.add(new String(s));
+						copiedStrings.add(split.get(i));
+					copy = new HashMap<String, Integer>();
+					for(String s: copiedStrings)
+						copy.put(new String(s), 0);
 					fields.add(new Field(split.get(0), false, copy, -1));
 
 				}
 
 			}
+			fields.add(output);
 		}	
 		catch(FileNotFoundException e){
 			System.out.println("FNF");
@@ -81,6 +87,27 @@ public class MyClassifier extends Classifier{
 	}
 
 	public void train(String trainingDataFilpath){
+		try{
+			Scanner sc = new Scanner(new File(trainingDataFilpath));
+			while(sc.hasNextLine())
+			{
+				String[] split = sc.nextLine().split(" +");
+				for(int i = 0 ; i < split.length; i++)
+				{
+					Field toUse = fields.get(i);
+					if(!toUse.numeric)
+					{
+						String key = split[i];
+						toUse.typeCounts.put(key, toUse.typeCounts.get(key)+1);
+					}
+
+				}
+			}
+		}
+		catch(FileNotFoundException e){
+			System.out.println("FNF");
+		}
+		
 
 	}
 
