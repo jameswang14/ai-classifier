@@ -6,11 +6,13 @@ public class MyClassifier extends Classifier{
 		public String name;
 		public boolean numeric;
 		public ArrayList<String> types; 
-		public Field(String name, boolean numeric, ArrayList<String> types)
+		public int num;
+		public Field(String name, boolean numeric, ArrayList<String> types, int num)
 		{
 			this.name = name;
 			this.numeric = numeric;
 			this.types = types;
+			this.num = num;
 
 		}
 
@@ -41,7 +43,7 @@ public class MyClassifier extends Classifier{
 			temp.add(sc.next());
 			sc.nextLine();
 			sc.nextLine();
-			Field output = new Field("output", false, temp);
+			Field output = new Field("output", false, temp, -1);
 			while(sc.hasNextLine())
 			{
 				temp.clear();
@@ -51,12 +53,12 @@ public class MyClassifier extends Classifier{
 				while(line.hasNext())
 					split.add(line.next());
 				if(split.get(1).equals("numeric"))
-					fields.add(new Field(split.get(0), true, null));
+					fields.add(new Field(split.get(0), true, null, -1));
 				else
 				{
 					for(int i = 0; i < split.size(); i++)
 						temp.add(split.get(i));
-					fields.add(new Field(split.get(0), false, temp));
+					fields.add(new Field(split.get(0), false, temp, 0));
 
 				}
 
