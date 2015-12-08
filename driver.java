@@ -4,8 +4,8 @@ public class driver
 	{
 		MyClassifier cl = new MyClassifier("census.names");
 		cl.train("census.train");
-		//c1.makeprediction("census.test");
 		System.out.println(cl.toString());
-
+		cl.makePredictions("census.test");
+		
 	}
 }

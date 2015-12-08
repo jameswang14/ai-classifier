@@ -107,13 +107,13 @@ public class MyClassifier extends Classifier{
 				boolean gt = false;
 				if(key.equals(">50K"))
 					gt = true;
-				System.out.println(gt + " " + key);
+				//System.out.println(gt + " " + key);
 				if(gt){
-					System.out.println("Added to 2");
+					//System.out.println("Added to 2");
 					toUse.typeCounts2.put(key, toUse.typeCounts2.get(key)+1);
 				}
 				else{
-					System.out.println("Added to 1");
+					//System.out.println("Added to 1");
 					toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
 				}
 				for(int i = 0 ; i < split.length-1; i++)
@@ -140,22 +140,36 @@ public class MyClassifier extends Classifier{
 	}
 
 	public void makePredictions(String testDataFilepath){
+		double gtprob = 1.0;
+		double ltprob = 1.0;
 		try{
 			Scanner sc = new Scanner(new File(testDataFilepath));
 			while(sc.hasNextLine())
 			{
 				String[] split = sc.nextLine().split(" +");
+				Field toUse = fields.get(split.length);
+				int lttotal = toUse.typeCounts1.get("<=50K")+2;
+				int gttotal = toUse.typeCounts2.get(">50K")+2;
+		
 				for(int i = 0 ; i < split.length; i++)
 				{
-					Field toUse = fields.get(i);
+					toUse = fields.get(i);
 					if(!toUse.numeric)
 					{
 						String key = split[i];
-						//int occurences = toUse.typeCounts.get(key)+1;
-
+						int ltoccurences = toUse.typeCounts1.get(key)+1;
+						int gtoccurences = toUse.typeCounts2.get(key)+1;
+						gtprob = gtprob*(double)(gtoccurences)/gttotal;
+						//System.out.println("gtprob " + gtprob + " " + (double)(gtoccurences)/gttotal);
+						ltprob = ltprob*(double)(ltoccurences)/lttotal;
+						//System.out.println("ltprob " + ltprob + " " + (double)(ltoccurences)/lttotal);
 					}
 
 				}
+				if(ltprob > gtprob)
+					System.out.println("<=50K");
+				else
+					System.out.println(">50K");
 			}
 		}
 		catch(FileNotFoundException e){
