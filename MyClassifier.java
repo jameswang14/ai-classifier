@@ -5,18 +5,20 @@ public class MyClassifier extends Classifier{
 	class Field{
 		public String name;
 		public boolean numeric;
-		public HashMap<String, Integer> typeCounts1; // <=50k 
-		public HashMap<String, Integer> typeCounts2; // > 50k
+		public ArrayList<HashMap<String,Integer>> typeCounts;
+		public ArrayList<String> classes;
+		//public HashMap<String, Integer> typeCounts1; // <=50k 
+		//public HashMap<String, Integer> typeCounts2; // > 50k
 		public int num;
 		public ArrayList<Integer> nums;
 		public ArrayList<Double> thetas;
 		public double theta;
-		public Field(String name, boolean numeric, HashMap<String, Integer> typeCounts1, HashMap<String, Integer> typeCounts2, int num)
+		public Field(String name, boolean numeric, ArrayList<HashMap<String, Integer>> typeCounts, ArrayList<String> classes, int num)
 		{
 			this.name = name;
 			this.numeric = numeric;
-			this.typeCounts1 = typeCounts1;
-			this.typeCounts2 = typeCounts2;
+			this.typeCounts = typeCounts;
+			this.classes = classes;
 			this.num = num;
 			nums = new ArrayList<Integer>();
 			thetas = new ArrayList<Double>();
@@ -72,10 +74,10 @@ public class MyClassifier extends Classifier{
 			{
 				s+=" [";
 				// to fix
-				for(Map.Entry<String, Integer> entry: this.typeCounts1.entrySet())
-					s+=entry.getKey() + ": " + entry.getValue().toString() + ", ";
-				for(Map.Entry<String, Integer> entry: this.typeCounts2.entrySet())
-					s+=entry.getKey() + " 2: " + entry.getValue().toString() + ", ";
+				//for(Map.Entry<String, Integer> entry: this.typeCounts1.entrySet())
+					//s+=entry.getKey() + ": " + entry.getValue().toString() + ", ";
+				//for(Map.Entry<String, Integer> entry: this.typeCounts2.entrySet())
+					//s+=entry.getKey() + " 2: " + entry.getValue().toString() + ", ";
 				s = s.substring(0, s.length()-2);
 				s+="] " + this.nums;
 			}
@@ -85,10 +87,10 @@ public class MyClassifier extends Classifier{
 			{
 				s+=" [";
 				// to fix
-				for(Map.Entry<String, Integer> entry: this.typeCounts1.entrySet())
-					s+=entry.getKey() + ": " + entry.getValue().toString() + ", ";
-				for(Map.Entry<String, Integer> entry: this.typeCounts2.entrySet())
-					s+=entry.getKey() + " 2: " + entry.getValue().toString() + ", ";
+				//for(Map.Entry<String, Integer> entry: this.typeCounts1.entrySet())
+					//s+=entry.getKey() + ": " + entry.getValue().toString() + ", ";
+				//for(Map.Entry<String, Integer> entry: this.typeCounts2.entrySet())
+					//s+=entry.getKey() + " 2: " + entry.getValue().toString() + ", ";
 				s = s.substring(0, s.length()-2);
 				s+= "]";
 			}	
@@ -111,23 +113,30 @@ public class MyClassifier extends Classifier{
 			Scanner sc = new Scanner(new File(namesFilepath));
 			ArrayList<String> copiedStrings = new ArrayList<String>();
 			ArrayList<String> split = new ArrayList<String>();
-			copiedStrings.add(sc.next());
-			copiedStrings.add(sc.next());
-			HashMap<String, Integer> copy = new HashMap<String, Integer>();
-			HashMap<String, Integer> copy2 = new HashMap<String, Integer>();			
+			ArrayList<String> temp = new ArrayList<String>();
+			Scanner line = new Scanner(sc.nextLine());
+			while(line.hasNext())
+			{
+				String next = line.next();
+				split.add(next);
+				temp.add(next);
+			}
+			for(String str:split)
+				copiedStrings.add(str);
+			ArrayList<HashMap<String, Integer>> copy = new ArrayList<HashMap<String, Integer>>();		
 			for(String s: copiedStrings){
-				copy.put(new String(s), 0);
-				copy2.put(new String(s), 0);
+				HashMap<String,Integer> m = new HashMap<String,Integer>();
+				m.put(new String(s), 0);
+				copy.add(m);
 			}
 			sc.nextLine();
-			sc.nextLine();
-			Field output = new Field("output", false, copy, copy2, -1);
+			Field output = new Field("output", false, copy, temp, -1);
 			while(sc.hasNextLine())
 			{
 				copiedStrings.clear();
 				split.clear();
 				String nextLine = sc.nextLine();
-				Scanner line = new Scanner(nextLine);
+				line = new Scanner(nextLine);
 				
 				while(line.hasNext())
 				{
@@ -135,18 +144,20 @@ public class MyClassifier extends Classifier{
 					split.add(next);
 				}
 				if(split.get(1).equals("numeric"))
-					fields.add(new Field(split.get(0), true, null, null, 0));
+					fields.add(new Field(split.get(0), true, null, temp, 0));
 				else
 				{
 					for(int i = 1; i < split.size(); i++)
 						copiedStrings.add(split.get(i));
-					copy = new HashMap<String, Integer>();
-					copy2 = new HashMap<String, Integer>();			
-					for(String s: copiedStrings){
-						copy.put(new String(s), 0);
-						copy2.put(new String(s), 0);
+					copy = new ArrayList<HashMap<String, Integer>>();		
+					for(int i= 0; i < temp.size();i++){
+						HashMap<String,Integer> m = new HashMap<String,Integer>();					
+						for(String s: copiedStrings){
+							m.put(new String(s), 0);
+						}
+						copy.add(m);
 					}
-					fields.add(new Field(split.get(0), false, copy, copy2, -1));
+					fields.add(new Field(split.get(0), false, copy, temp, -1));
 
 				}
 
@@ -170,18 +181,7 @@ public class MyClassifier extends Classifier{
 				String[] split = sc.nextLine().split(" +");
 				Field toUse = fields.get(split.length-1);	
 				String key = split[split.length-1];
-				boolean gt = false;
-				if(key.equals(">50K"))
-					gt = true;
-				//System.out.println(gt + " " + key);
-				if(gt){
-					//System.out.println("Added to 2");
-					toUse.typeCounts2.put(key, toUse.typeCounts2.get(key)+1);
-				}
-				else{
-					//System.out.println("Added to 1");
-					toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
-				}
+				toUse.typeCounts.get(toUse.classes.indexOf(key)).put(key, toUse.typeCounts.get(toUse.classes.indexOf(key)).get(key)+1);
 				for(int i = 0 ; i < split.length; i++)
 				{
 					toUse = fields.get(i);
@@ -192,16 +192,13 @@ public class MyClassifier extends Classifier{
 							outputNums.add(1);
 						else
 							outputNums.add(0);
-						toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
+						//toUse.typeCounts.get(toUse.classes.indexOf(split[split.length-1])).put(key, toUse.typeCounts.get(toUse.classes.indexOf(key)).get(key)+1);
 
 					}
 					else if(!toUse.numeric)
 					{
 						key = split[i];
-						if(gt)
-							toUse.typeCounts2.put(key, toUse.typeCounts2.get(key)+1);
-						else
-							toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
+						toUse.typeCounts.get(toUse.classes.indexOf(split[split.length-1])).put(key, toUse.typeCounts.get(toUse.classes.indexOf(split[split.length-1])).get(key)+1);
 				
 					}
 					else
@@ -231,45 +228,57 @@ public class MyClassifier extends Classifier{
 	}
 
 	public void makePredictions(String testDataFilepath){
-		double gtprob = 1.0;
-		double ltprob = 1.0;
+		
 		double probNum = 1.0;
 		try{
 			Scanner sc = new Scanner(new File(testDataFilepath));
 			while(sc.hasNextLine())
 			{
+				ArrayList<Double> probs = new ArrayList<Double>();
+				
 				String[] split = sc.nextLine().split(" +");
 				Field toUse = fields.get(split.length);
-				int lttotal = toUse.typeCounts1.get("<=50K")+2;
-				int gttotal = toUse.typeCounts2.get(">50K")+2;
-		
-				for(int i = 0 ; i < split.length; i++)
-				{
-					toUse = fields.get(i);
-					if(!toUse.numeric)
+				int iter = toUse.classes.size();
+				for(int j = 0; j < iter; j++){
+					toUse = fields.get(split.length);
+					//System.out.println(toUse.typeCounts);
+					int total = toUse.typeCounts.get(j).get(toUse.classes.get(j))+2;
+					//System.out.println(j + " " + total);
+					double prob = 1.0;
+					for(int i = 0 ; i < split.length; i++)
 					{
-						String key = split[i];
-						int ltoccurences = toUse.typeCounts1.get(key)+1;
-						int gtoccurences = toUse.typeCounts2.get(key)+1;
-						gtprob = gtprob*(double)(gtoccurences)/gttotal;
-						//System.out.println("gtprob " + gtprob + " " + (double)(gtoccurences)/gttotal);
-						ltprob = ltprob*(double)(ltoccurences)/lttotal;
-						//System.out.println("ltprob " + ltprob + " " + (double)(ltoccurences)/lttotal);
+						toUse = fields.get(i);
+						if(!toUse.numeric)
+						{
+							String key = split[i];
+							int occurences = toUse.typeCounts.get(j).get(key)+1;
+							prob = prob*(double)(occurences)/total;
+
+						}
+						else
+						{
+							//System.out.println(toUse.classify(Double.parseDouble(split[i])));
+
+
+
+						}
+
 					}
-					else
-					{
-						System.out.println(toUse.classify(Double.parseDouble(split[i])));
-
-
-
-					}
-
+					probs.add(prob);
 				}
-				if(ltprob > gtprob)
-					System.out.println("<=50K");
-				else
-					System.out.println(">50K");
+				//System.out.println(probs);
+				int idx = 0;
+				double max = 0.0;
+				for(int i = 0; i < probs.size(); i++){
+					double d = probs.get(i);
+					if (d>max){
+						idx = i;
+						max = d;
+					}
+				}
+				System.out.println(toUse.classes.get(idx));
 			}
+
 		}
 		catch(FileNotFoundException e){
 			System.out.println("FNF");
