@@ -26,6 +26,30 @@ public class Check
 			System.out.println(count);
 			System.out.println(pos);
 			System.out.println("Accuracy is: " + (double)count/pos);
+			List<String> al = new ArrayList<>();
+			al.addAll(lst);
+			Set<String> hs = new HashSet<>();
+			hs.addAll(al);
+			al.clear();
+			al.addAll(hs);
+			System.out.println("Class Correct Incorrect");
+			for(String s : al){
+				count = 0;
+				pos = 0;
+				int all = 0;
+				Scanner sc2 = new Scanner(new File("out.txt"));
+				while(sc2.hasNextLine())
+				{
+					String temp = sc2.nextLine();
+					if (temp.equals(s) && s.equals(lst.get(pos))){
+						count++;
+					}
+					if(s.equals(lst.get(pos)))
+						all++;
+					pos++;
+				}
+				System.out.println(s + " " + count + " " + (all-count));
+			}
 		}
 		catch(FileNotFoundException e){
 			System.out.println("FNF");
