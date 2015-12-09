@@ -48,7 +48,7 @@ public class Check
 						all++;
 					pos++;
 				}
-				System.out.println(s + " " + count + " " + (all-count));
+				System.out.println(s + " " + count + "(" + ((double)(count)/all*100) + "%)" + " " + (all-count) +  "(" + ((double)(all-count)/all*100) + "%)");
 			}
 		}
 		catch(FileNotFoundException e){
