@@ -17,6 +17,7 @@ public class RandomClassifier extends Classifier{
 			Scanner sc = new Scanner(new File(testDataFilepath));
 			while(sc.hasNextLine())
 			{
+				String s = sc.nextLine();
 				double prob = Math.random();
 				if(prob > 0.5)
 					System.out.println("<=50K");

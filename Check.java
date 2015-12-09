@@ -16,13 +16,15 @@ public class Check
 			Scanner sc1 = new Scanner(new File("out.txt"));
 			int pos = 0;
 			int count = 0;
-			while(sc.hasNextLine())
+			while(sc1.hasNextLine())
 			{
-				if (sc.nextLine().equals(lst.get(pos))){
+				if (sc1.nextLine().equals(lst.get(pos))){
 					count++;
 				}
 				pos++;
 			}
+			System.out.println(count);
+			System.out.println(pos);
 			System.out.println("Accuracy is: " + (double)count/pos);
 		}
 		catch(FileNotFoundException e){
