@@ -8,6 +8,9 @@ public class MyClassifier extends Classifier{
 		public HashMap<String, Integer> typeCounts1; // <=50k 
 		public HashMap<String, Integer> typeCounts2; // > 50k
 		public int num;
+		public ArrayList<Integer> nums;
+		public ArrayList<Double> thetas;
+		public double theta;
 		public Field(String name, boolean numeric, HashMap<String, Integer> typeCounts1, HashMap<String, Integer> typeCounts2, int num)
 		{
 			this.name = name;
@@ -15,15 +18,71 @@ public class MyClassifier extends Classifier{
 			this.typeCounts1 = typeCounts1;
 			this.typeCounts2 = typeCounts2;
 			this.num = num;
+			nums = new ArrayList<Integer>();
+			thetas = new ArrayList<Double>();
+			theta = 0.0;
+		}
+
+		public void train(Field outputs)
+		{
+			double rate = 1;
+			for(int n = 0; n < nums.size(); n++)
+				thetas.add(0.0);
+			for(int i = 0; i < nums.size(); i++)
+			{
+				double z = theta * nums.get(i);
+				double h = sigmoid(z);
+
+				double gradient = (1.0/nums.size());
+				double gsum = 0.0;
+				for(int n = 0; n < nums.size(); n++)
+				{
+					gsum += (h-(double)(outputs.nums.get(n))) * (double)nums.get(n);
+				}
+				gradient *= gsum;
+				// double hess  = (1.0/nums.size);
+				// double hsum = 0.0;
+				// for(int n = 0; n < nums.size(); n++)
+				// {
+
+				// }
+				theta = theta - rate*(gsum);
+				
+
+			}
 
 		}
 
+		public double classify(double data)
+		{
+			return sigmoid(theta * data);
+		}
+
+		private double sigmoid(double x)
+		{
+			double d = 1.0 + Math.pow(Math.E,(-1.0 * x));
+			d = 1.0/d;
+			return d;
+
+		}
 		public String toString()
 		{
 			String s = "Name: " + this.name;
-			if(this.numeric)
-				s+= " numeric";
-			else{
+			if(this.name.equals("output"))
+			{
+				s+=" [";
+				// to fix
+				for(Map.Entry<String, Integer> entry: this.typeCounts1.entrySet())
+					s+=entry.getKey() + ": " + entry.getValue().toString() + ", ";
+				for(Map.Entry<String, Integer> entry: this.typeCounts2.entrySet())
+					s+=entry.getKey() + " 2: " + entry.getValue().toString() + ", ";
+				s = s.substring(0, s.length()-2);
+				s+="] " + this.nums;
+			}
+			else if(this.numeric)
+				s+= " numeric" + this.nums;
+			else
+			{
 				s+=" [";
 				// to fix
 				for(Map.Entry<String, Integer> entry: this.typeCounts1.entrySet())
@@ -34,6 +93,12 @@ public class MyClassifier extends Classifier{
 				s+= "]";
 			}	
 			return s;
+		}
+
+		public void printThetas()
+		{
+			for(int i = 0; i < thetas.size(); i++)
+				System.out.print("Theta " + Integer.toString(i) + ": " + Double.toString(thetas.get(i)));
 		}
 
 	}
@@ -99,6 +164,7 @@ public class MyClassifier extends Classifier{
 	public void train(String trainingDataFilpath){
 		try{
 			Scanner sc = new Scanner(new File(trainingDataFilpath));
+			ArrayList<Integer> outputNums = new ArrayList<Integer>();
 			while(sc.hasNextLine())
 			{
 				String[] split = sc.nextLine().split(" +");
@@ -116,10 +182,20 @@ public class MyClassifier extends Classifier{
 					//System.out.println("Added to 1");
 					toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
 				}
-				for(int i = 0 ; i < split.length-1; i++)
+				for(int i = 0 ; i < split.length; i++)
 				{
 					toUse = fields.get(i);
-					if(!toUse.numeric)
+					if(i == split.length-1)
+					{
+						key = split[i];
+						if(key.equals(">50K"))
+							outputNums.add(1);
+						else
+							outputNums.add(0);
+						toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
+
+					}
+					else if(!toUse.numeric)
 					{
 						key = split[i];
 						if(gt)
@@ -128,7 +204,22 @@ public class MyClassifier extends Classifier{
 							toUse.typeCounts1.put(key, toUse.typeCounts1.get(key)+1);
 				
 					}
+					else
+					{
+						int val = Integer.parseInt(split[i]);
+						toUse.nums.add(val);
+					}
 
+				}
+
+			}
+			fields.get(fields.size()-1).nums = outputNums;
+			for(int i = 0; i < fields.size(); i++)
+			{
+				if(fields.get(i).numeric)
+				{
+					fields.get(i).train(fields.get(fields.size()-1));
+					//System.out.println(fields.get(i).theta);
 				}
 			}
 		}
@@ -142,6 +233,7 @@ public class MyClassifier extends Classifier{
 	public void makePredictions(String testDataFilepath){
 		double gtprob = 1.0;
 		double ltprob = 1.0;
+		double probNum = 1.0;
 		try{
 			Scanner sc = new Scanner(new File(testDataFilepath));
 			while(sc.hasNextLine())
@@ -163,6 +255,13 @@ public class MyClassifier extends Classifier{
 						//System.out.println("gtprob " + gtprob + " " + (double)(gtoccurences)/gttotal);
 						ltprob = ltprob*(double)(ltoccurences)/lttotal;
 						//System.out.println("ltprob " + ltprob + " " + (double)(ltoccurences)/lttotal);
+					}
+					else
+					{
+						System.out.println(toUse.classify(Double.parseDouble(split[i])));
+
+
+
 					}
 
 				}
